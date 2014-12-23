@@ -26,9 +26,12 @@ if (Meteor.isClient) {
 	  	"submit .new-task": function (event) {
 	  		var text = event.target.text.value;
 	  		// event.target = form element; .text.value = input val
+	  		console.log(text);
 	  		Tasks.insert({
 	  			text: text,
-	  			createdAt: new Date() // current time
+	  			createdAt: new Date(),
+	  			owner: Meteor.userId(),
+	  			username: Meteor.user().username
 	  		});
 
 	  		// Clear form -- make input blank after task inserted into Tasks collection
@@ -59,4 +62,7 @@ if (Meteor.isClient) {
 	  	}
   	});
 
+  	Accounts.ui.config({
+  		passwordSignupFields: "USERNAME_ONLY"
+  	});
 }
