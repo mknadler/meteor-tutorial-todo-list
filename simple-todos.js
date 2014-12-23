@@ -27,12 +27,7 @@ if (Meteor.isClient) {
 	  		var text = event.target.text.value;
 	  		// event.target = form element; .text.value = input val
 	  		console.log(text);
-	  		Tasks.insert({
-	  			text: text,
-	  			createdAt: new Date(),
-	  			owner: Meteor.userId(),
-	  			username: Meteor.user().username
-	  		});
+	  		Meteor.call("addTask", text);
 
 	  		// Clear form -- make input blank after task inserted into Tasks collection
 	  		event.target.text.value = "";
@@ -51,14 +46,10 @@ if (Meteor.isClient) {
 	  	// get _id of current task with this._id
 	  	// once have id, can use to update / remove it
 	  	"click .toggle-checked": function() {
-	  		// Set checked property to opposite of current val
-	  		Tasks.update(this._id, {$set: {checked: ! this.checked}});
-	  		// update takes 2 args: 1st = selector that identifies a subset of collection
-	  		// 2nd = update parameter that specifies what should be done
+	  		Meteor.call("setChecked", this._id, ! this.checked);
 	  	},
 	  	"click .delete": function () {
-	  		Tasks.remove(this._id);
-	  		// remove takes 1 arg: selector to determine which item to remove from collection
+	  		Meteor.call("deleteTask", this._id);
 	  	}
   	});
 
@@ -66,3 +57,25 @@ if (Meteor.isClient) {
   		passwordSignupFields: "USERNAME_ONLY"
   	});
 }
+
+Meteor.methods({
+	addTask: function (text){
+
+		if ( ! Meteor.userId()) {
+			throw new Meteor.Error("not-authorized");
+		}
+
+		Tasks.insert({
+			text: text,
+			createdAt: new Date(),
+			owner: Meteor.userId(),
+			username: Meteor.user().username
+		});
+	},
+	deleteTask: function (taskId) {
+		Tasks.remove(taskId);
+	},
+	setChecked: function (taskId, setChecked) {
+		Tasks.update(taskId, { $set: { checked: setChecked} });
+	}
+});
